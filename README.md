@@ -325,9 +325,7 @@ The analytical layer powers three interactive Tableau executive dashboards:
 - **Relational Database:** PostgreSQL
 - **SQL & Data Modeling:** Common Table Expressions (CTEs), Window Functions (`NTILE`, `ROW_NUMBER`, `DENSE_RANK`), Advanced Aggregations, Conditional Logic (`CASE`), Dimensional Modeling
 - **Business Intelligence & Visualization:** Tableau Desktop / Tableau Public
-- **Data Architecture:** Medallion Architecture (Bronze $
-ightarrow$ Silver $
-ightarrow$ Gold)
+- **Data Architecture:** Medallion Architecture (Bronze → Silver → Gold)
 - **Data Source:** Olist Brazilian E-Commerce Dataset (Kaggle)
 
 ---
