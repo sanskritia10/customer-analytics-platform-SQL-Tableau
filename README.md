@@ -1,7 +1,3 @@
-------------------------------------------------------------------------
-
-editor_options: markdown: wrap: sentence ---
-
 # Customer Intelligence Platform
 
 An end-to-end **Customer Intelligence Platform** built using **PostgreSQL, SQL, and Tableau** on the Olist Brazilian E-Commerce dataset.
@@ -10,7 +6,7 @@ The project demonstrates a complete analytics workflow from **business requireme
 
 The objective is to convert raw transactional data into actionable customer intelligence that supports strategic decisions around **customer value, retention, revenue concentration, and customer experience**.
 
-------------------------------------------------------------------------
+---
 
 ## Table of Contents
 
@@ -22,7 +18,7 @@ The objective is to convert raw transactional data into actionable customer inte
   - [1. Business Requirements (BRD)](#1-business-requirements)
   - [2. Data Profiling](#2-data-profiling)
   - [3. Data Quality Assessment (DQA)](#3-data-quality-assessment)
-  - [4. Medallion Architecture (Bronze–Silver–Gold)](#4-medallion-architecture-bronze-silver-gold)
+  - [4. Medallion Architecture (Bronze–Silver–Gold)](#4-medallion-architecture-bronzesilvergold)
   - [5. Gold Analytical Layer](#5-gold-analytical-layer)
   - [6. Customer Intelligence & RFM Analysis](#6-customer-intelligence--rfm-analysis)
   - [7. Customer Segmentation](#7-customer-segmentation)
@@ -34,26 +30,32 @@ The objective is to convert raw transactional data into actionable customer inte
 - [Repository Structure](#repository-structure)
 - [Project Outcome](#project-outcome)
 
-------------------------------------------------------------------------
+---
 
-## Project Overview {#project-overview}
+## Project Overview
 
 In e-commerce, evaluating customer performance strictly on aggregate GMV masks critical retention risks and concentration vulnerabilities. This project implements a robust SQL data pipeline and analytics platform that establishes a single customer view (Customer 360), segments customer cohorts using RFM principles, and overlays delivery and customer experience metrics to identify high-impact growth and retention levers.
 
-------------------------------------------------------------------------
+---
 
-## Business Objectives {#business-objectives}
+## Business Objectives
 
-The analysis was designed to answer core business questions: - **Customer Value & Identification:** Who are the highest-value customers across the platform? - **Retention & Repeat Purchasing:** What proportion of customers make repeat purchases, and how much do they contribute to overall revenue? - **Revenue Concentration:** How concentrated is platform revenue across customer spend tiers? - **Retention Opportunities:** Which one-time buyers represent high-upside retention targets? - **Service & Experience Risk:** Are high-value customers disproportionately impacted by logistics delays or poor review scores? - **Strategic Prioritization:** Which specific customer segments require immediate executive and operational focus?
+The analysis was designed to answer core business questions:
+- **Customer Value & Identification:** Who are the highest-value customers across the platform?
+- **Retention & Repeat Purchasing:** What proportion of customers make repeat purchases, and how much do they contribute to overall revenue?
+- **Revenue Concentration:** How concentrated is platform revenue across customer spend tiers?
+- **Retention Opportunities:** Which one-time buyers represent high-upside retention targets?
+- **Service & Experience Risk:** Are high-value customers disproportionately impacted by logistics delays or poor review scores?
+- **Strategic Prioritization:** Which specific customer segments require immediate executive and operational focus?
 
-------------------------------------------------------------------------
+---
 
 ## Dataset Architecture & Scale
 
 The project utilizes the **Olist Brazilian E-Commerce Public Dataset**, covering transactions from **September 2016 to October 2018**.
 
 | Entity | Records | Description |
-|----|---:|----|
+|---|---:|---|
 | **Customers** | 99,441 | Customer account and location data |
 | **Unique Customers** | 96,096 | Distinct underlying individuals (`customer_unique_id`) |
 | **Orders** | 99,441 | Order transaction records and operational timestamps |
@@ -65,11 +67,11 @@ The project utilizes the **Olist Brazilian E-Commerce Public Dataset**, covering
 | **Geolocation** | 19,015 | Zip code prefixes, coordinates, and state mapping |
 | **Category Translations** | 71 | Portuguese-to-English category translation mapping |
 
-------------------------------------------------------------------------
+---
 
-## Project Workflow {#project-workflow}
+## Project Workflow
 
-``` text
+```text
 Business Requirements (BRD)
         ↓
 Data Profiling & Relationship Discovery
@@ -91,7 +93,7 @@ Executive Insights & Strategic Recommendations
 Interactive Tableau Dashboards
 ```
 
-------------------------------------------------------------------------
+---
 
 ## Methodology & Technical Implementation
 
@@ -101,15 +103,18 @@ A formal Business Requirements Document (BRD) was created to establish KPIs, ana
 
 *Reference:* `documentation/BRD_Customer_Intelligence.pdf`
 
-------------------------------------------------------------------------
+---
 
 ### 2. Data Profiling
 
-Initial profiling determined structural grains, foreign key relationships, null distributions, and anomalies: - **Customer Identity Granularity:** Disambiguated `customer_id` (transactional session level) from `customer_unique_id` (individual customer level). - **One-to-Many Relationships:** Handled multiple items per order and split payment structures requiring pre-aggregation before joining to order headers. - **Logistics Anomalies:** Identified timestamp sequences requiring validation (e.g., carrier pick-up vs. approval dates).
+Initial profiling determined structural grains, foreign key relationships, null distributions, and anomalies:
+- **Customer Identity Granularity:** Disambiguated `customer_id` (transactional session level) from `customer_unique_id` (individual customer level).
+- **One-to-Many Relationships:** Handled multiple items per order and split payment structures requiring pre-aggregation before joining to order headers.
+- **Logistics Anomalies:** Identified timestamp sequences requiring validation (e.g., carrier pick-up vs. approval dates).
 
 *Reference:* `documentation/Data_Profiling_Report.pdf`
 
-------------------------------------------------------------------------
+---
 
 ### 3. Data Quality Assessment
 
@@ -118,7 +123,7 @@ A comprehensive 53-rule Data Quality Assessment (DQA) audit was executed across 
 #### Key Findings & Quality Status
 
 | Finding | Result | Operational Action |
-|----|---:|----|
+|---|---:|---|
 | Multiple `customer_id` per `customer_unique_id` | 2,997 | Reconciled via customer identity mapping in Silver layer |
 | Duplicate Review IDs | 789 | Deduplicated preserving latest timestamp |
 | Carrier timestamp prior to order approval | 1,359 | Flagged & normalized in transformation pipeline |
@@ -130,7 +135,7 @@ A comprehensive 53-rule Data Quality Assessment (DQA) audit was executed across 
 
 *Reference:* `documentation/Data_Quality_Assessment.pdf`
 
-------------------------------------------------------------------------
+---
 
 ### 4. Medallion Architecture (Bronze–Silver–Gold)
 
@@ -138,7 +143,7 @@ A comprehensive 53-rule Data Quality Assessment (DQA) audit was executed across 
 
 Ingests raw entities with complete fidelity, maintaining native source structures:
 
-```         
+```text
 bronze/
 ├── customers
 ├── orders
@@ -153,54 +158,80 @@ bronze/
 
 #### Silver Layer
 
-Transforms raw tables into cleaned, conformed, and analysis-ready structures: - Resolves customer identity levels across multi-purchase accounts. - Pre-aggregates order items and split payments to the exact order grain. - Derives standardized logistics metrics: `delivery_duration_days`, `is_late_order`, and delivery window variance. - Standardizes product taxonomy and category translations.
+Transforms raw tables into cleaned, conformed, and analysis-ready structures:
+- Resolves customer identity levels across multi-purchase accounts.
+- Pre-aggregates order items and split payments to the exact order grain.
+- Derives standardized logistics metrics: `delivery_duration_days`, `is_late_order`, and delivery window variance.
+- Standardizes product taxonomy and category translations.
 
-**Silver Layer Validation Metrics:** \| Metric \| Result \| \|---\|---:\| \| Total Orders Processed \| 99,441 \| \| Unique Customers \| 96,096 \| \| Valid Delivery Records \| 96,476 \| \| Negative Delivery Durations \| 0 (Pass) \| \| Minimum Delivery Duration \| 0.53 days \| \| Maximum Delivery Duration \| 209.63 days \| \| Average Delivery Duration \| 12.56 days \|
+**Silver Layer Validation Metrics:**
 
-------------------------------------------------------------------------
+| Metric | Result |
+|---|---:|
+| Total Orders Processed | 99,441 |
+| Unique Customers | 96,096 |
+| Valid Delivery Records | 96,476 |
+| Negative Delivery Durations | 0 (Pass) |
+| Minimum Delivery Duration | 0.53 days |
+| Maximum Delivery Duration | 209.63 days |
+| Average Delivery Duration | 12.56 days |
+
+---
 
 ### 5. Gold Analytical Layer
 
-The Gold layer provides clean dimensional models, curated fact tables, and optimized views: - `gold.customer_360` — Comprehensive single customer view. - `gold.customer_intelligence` — Behavioral and monetary metrics. - `gold.customer_experience` — Logistics performance and review scoring per customer. - `gold.order_summary` — Reconciled order-level fact table. - `gold.executive_kpis` — Aggregate platform-level metrics. - `gold.v_customer_segments` — Dynamic customer segmentation view. - `gold.v_customer_type_performance` — One-time vs. Repeat customer performance. - `gold.v_retention_opportunities` — Target list for high-value win-back campaigns. - `gold.v_revenue_concentration` — Spend quintile and distribution model.
+The Gold layer provides clean dimensional models, curated fact tables, and optimized views:
+- `gold.customer_360` — Comprehensive single customer view.
+- `gold.customer_intelligence` — Behavioral and monetary metrics.
+- `gold.customer_experience` — Logistics performance and review scoring per customer.
+- `gold.order_summary` — Reconciled order-level fact table.
+- `gold.executive_kpis` — Aggregate platform-level metrics.
+- `gold.v_customer_segments` — Dynamic customer segmentation view.
+- `gold.v_customer_type_performance` — One-time vs. Repeat customer performance.
+- `gold.v_retention_opportunities` — Target list for high-value win-back campaigns.
+- `gold.v_revenue_concentration` — Spend quintile and distribution model.
 
-------------------------------------------------------------------------
+---
 
 ### 6. Customer Intelligence & RFM Analysis
 
-Customers were scored across three core behavioral dimensions: - **Recency (**$R$): Days since most recent completed order. - **Frequency (**$F$): Total count of completed orders. - **Monetary Value (**$M$): Total lifetime spend across all orders.
+Customers were scored across three core behavioral dimensions:
+- **Recency ($R$):** Days since most recent completed order.
+- **Frequency ($F$):** Total count of completed orders.
+- **Monetary Value ($M$):** Total lifetime spend across all orders.
 
 #### Customer Spend Distribution
 
-| Metric                   | Value ($/R$) |
-|--------------------------|-------------:|
-| Minimum                  |         0.00 |
-| 25th Percentile          |        63.12 |
-| Median (50th Percentile) |       108.00 |
-| 75th Percentile          |       183.53 |
-| 90th Percentile          |       319.57 |
-| 95th Percentile          |       476.15 |
-| Maximum                  |    13,664.08 |
+| Metric | Value ($/R$) |
+|---|---:|
+| Minimum | 0.00 |
+| 25th Percentile | 63.12 |
+| Median (50th Percentile) | 108.00 |
+| 75th Percentile | 183.53 |
+| 90th Percentile | 319.57 |
+| 95th Percentile | 476.15 |
+| Maximum | 13,664.08 |
 
 #### Monetary Quintile Distribution
 
-| Quintile                    | Customers | Revenue Share |
-|-----------------------------|----------:|--------------:|
-| **Quintile 1 (Lowest 20%)** |    19,220 |         4.77% |
-| **Quintile 2**              |    19,219 |         8.49% |
-| **Quintile 3**              |    19,219 |        13.06% |
-| **Quintile 4**              |    19,219 |        19.91% |
-| **Quintile 5 (Top 20%)**    |    19,219 |    **53.77%** |
+| Quintile | Customers | Revenue Share |
+|---|---:|---:|
+| **Quintile 1 (Lowest 20%)** | 19,220 | 4.77% |
+| **Quintile 2** | 19,219 | 8.49% |
+| **Quintile 3** | 19,219 | 13.06% |
+| **Quintile 4** | 19,219 | 19.91% |
+| **Quintile 5 (Top 20%)** | 19,219 | **53.77%** |
 
 > **Key Takeaway:** The top 20% of customers generate **53.77%** of total platform revenue, highlighting strong Pareto dynamics and extreme revenue concentration.
 
-------------------------------------------------------------------------
+---
 
 ### 7. Customer Segmentation
 
 Customer behavior was synthesized into 6 business segments based on purchase recency, order frequency, and cumulative customer value:
 
-| Customer Segment | Customers | \% of Customer Base | Total Revenue ($/R$) | \% Revenue Share | Avg Customer Value ($/R$) |
-|----|---:|---:|---:|---:|---:|
+| Customer Segment | Customers | % of Customer Base | Total Revenue ($/R$) | % Revenue Share | Avg Customer Value ($/R$) |
+|---|---:|---:|---:|---:|---:|
 | **High-Value One-Time** | 36,055 | 37.52% | 10,911,288.75 | **68.16%** | 302.63 |
 | **Established One-Time** | 18,978 | 19.75% | 1,642,328.02 | 10.26% | 86.54 |
 | **Recent One-Time** | 22,311 | 23.22% | 1,632,042.84 | 10.19% | 73.15 |
@@ -209,19 +240,19 @@ Customer behavior was synthesized into 6 business segments based on purchase rec
 | **Developing Repeat** | 614 | 0.64% | 60,264.33 | 0.38% | 98.14 |
 | **Total** | **96,096** | **100.00%** | **16,008,872.12** | **100.00%** | **166.59** |
 
-------------------------------------------------------------------------
+---
 
 ### 8. Customer Type Analysis
 
 | Customer Type | Customers | Customer % | Total Revenue ($/R$) | Revenue % | Avg Customer Value ($/R$) |
-|----|---:|---:|---:|---:|---:|
+|---|---:|---:|---:|---:|---:|
 | **One-Time Customer** | 93,099 | 96.88% | 15,064,849.41 | 94.10% | 161.82 |
 | **Repeat Customer** | 2,997 | 3.12% | 944,022.71 | 5.90% | **314.99** |
 
-- Repeat customers deliver **\~2x higher average monetary value** (\$314.99 vs. \$161.82) compared to one-time buyers.
+- Repeat customers deliver **~2x higher average monetary value** ($314.99 vs. $161.82) compared to one-time buyers.
 - Despite representing just 3.12% of the user base, repeat buyers form the bedrock of sustainable customer lifetime value.
 
-------------------------------------------------------------------------
+---
 
 ### 9. Customer Experience Analysis
 
@@ -230,14 +261,14 @@ Cross-referencing customer value segments against operational experience KPIs re
 #### Customer Type Experience Comparison
 
 | Customer Type | Avg Delivery Days | Late Order Rate (%) | Avg Review Score | Poor Experience Rate (%) |
-|----|---:|---:|---:|---:|
+|---|---:|---:|---:|---:|
 | **One-Time** | 12.58 | 6.84% | 4.08 | 4.07% |
 | **Repeat** | 12.34 | 5.84% | 4.12 | 6.27% |
 
 #### Segment-Level Logistics & Experience Metrics
 
 | Segment | Avg Delivery Days | Late Order Rate (%) | Avg Review Score | Poor Experience Rate (%) |
-|----|---:|---:|---:|---:|
+|---|---:|---:|---:|---:|
 | **High-Value Repeat** | 12.71 | 6.18% | 4.10 | **6.63%** |
 | **High-Value One-Time** | 13.73 | 7.59% | 4.00 | 4.62% |
 | **Developing Repeat** | 10.92 | 4.52% | 4.18 | 4.89% |
@@ -245,26 +276,26 @@ Cross-referencing customer value segments against operational experience KPIs re
 | **Recent One-Time** | 9.99 | 6.36% | 4.21 | 3.51% |
 | **Low-Value Inactive** | 11.98 | 4.76% | 4.14 | 2.54% |
 
-------------------------------------------------------------------------
+---
 
 ## Key Business Insights & Strategy
 
-1.  **Low Repeat Purchase Penetration (3.12%):**
-    - 96.88% of customers churn after a single purchase.
-    - *Recommendation:* Introduce targeted post-purchase reactivation triggers within 30–60 days of initial order fulfillment.
-2.  **Severe Revenue Concentration:**
-    - The top 20% of spenders account for 53.77% of total revenue.
-    - *Recommendation:* Prioritize VIP retention workflows and dedicated account recovery protocols for top-tier spenders.
-3.  **Massive Upside in High-Value One-Time Segment:**
-    - 36,055 customers in the **High-Value One-Time** segment drove **68.16% of total platform revenue** (\$10.9M+).
-    - *Recommendation:* Converting even 3–5% of this segment into repeat buyers represents a major multi-million dollar revenue expansion opportunity.
-4.  **Service Friction Among Most Valuable Buyers:**
-    - **High-Value Repeat** customers suffer from the highest poor-experience rate (**6.63%**) and **High-Value One-Time** buyers experience the highest late order rate (**7.59%**).
-    - *Recommendation:* Implement proactive customer support outreach for high-value orders experiencing delivery delays before negative reviews are registered.
+1. **Low Repeat Purchase Penetration (3.12%):**
+   - 96.88% of customers churn after a single purchase.
+   - *Recommendation:* Introduce targeted post-purchase reactivation triggers within 30–60 days of initial order fulfillment.
+2. **Severe Revenue Concentration:**
+   - The top 20% of spenders account for 53.77% of total revenue.
+   - *Recommendation:* Prioritize VIP retention workflows and dedicated account recovery protocols for top-tier spenders.
+3. **Massive Upside in High-Value One-Time Segment:**
+   - 36,055 customers in the **High-Value One-Time** segment drove **68.16% of total platform revenue** ($10.9M+).
+   - *Recommendation:* Converting even 3–5% of this segment into repeat buyers represents a major multi-million dollar revenue expansion opportunity.
+4. **Service Friction Among Most Valuable Buyers:**
+   - **High-Value Repeat** customers suffer from the highest poor-experience rate (**6.63%**) and **High-Value One-Time** buyers experience the highest late order rate (**7.59%**).
+   - *Recommendation:* Implement proactive customer support outreach for high-value orders experiencing delivery delays before negative reviews are registered.
 
-------------------------------------------------------------------------
+---
 
-## Tableau Dashboards {#tableau-dashboards}
+## Tableau Dashboards
 
 The analytical layer powers three interactive Tableau executive dashboards:
 
@@ -287,21 +318,23 @@ The analytical layer powers three interactive Tableau executive dashboards:
 
 *Dashboard previews are available in `tableau/dashboard_screenshots/`.*
 
-------------------------------------------------------------------------
+---
 
-## Technology Stack {#technology-stack}
+## Technology Stack
 
 - **Relational Database:** PostgreSQL
 - **SQL & Data Modeling:** Common Table Expressions (CTEs), Window Functions (`NTILE`, `ROW_NUMBER`, `DENSE_RANK`), Advanced Aggregations, Conditional Logic (`CASE`), Dimensional Modeling
 - **Business Intelligence & Visualization:** Tableau Desktop / Tableau Public
-- **Data Architecture:** Medallion Architecture (Bronze --\> Silver --\> Gold)
+- **Data Architecture:** Medallion Architecture (Bronze $
+ightarrow$ Silver $
+ightarrow$ Gold)
 - **Data Source:** Olist Brazilian E-Commerce Dataset (Kaggle)
 
-------------------------------------------------------------------------
+---
 
-## Repository Structure {#repository-structure}
+## Repository Structure
 
-``` text
+```text
 customer-intelligence-platform/
 │
 ├── README.md                                <- Main project documentation
@@ -323,13 +356,16 @@ customer-intelligence-platform/
     └── dashboard_screenshots/               <- Exported dashboard views & visual guides
 ```
 
-------------------------------------------------------------------------
+---
 
-## Project Outcome {#project-outcome}
+## Project Outcome
 
-This platform demonstrates how structured analytics and data engineering transform raw transactional records into actionable customer intelligence: 1. **Engineered an enterprise Medallion pipeline** processing \~100k orders with automated data quality gates. 2. **Constructed a comprehensive Customer 360 profile** capturing recency, frequency, monetary value, and customer experience metrics. 3. **Delivered executive-ready Tableau dashboards** that reveal revenue concentration risks and high-upside retention targets.
+This platform demonstrates how structured analytics and data engineering transform raw transactional records into actionable customer intelligence:
+1. **Engineered an enterprise Medallion pipeline** processing ~100k orders with automated data quality gates.
+2. **Constructed a comprehensive Customer 360 profile** capturing recency, frequency, monetary value, and customer experience metrics.
+3. **Delivered executive-ready Tableau dashboards** that reveal revenue concentration risks and high-upside retention targets.
 
-------------------------------------------------------------------------
+---
 
 ### Dataset Attribution
 
